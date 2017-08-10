@@ -1,0 +1,14 @@
+version: '3'
+services:
+  spark-master:
+    image: twang2218/spark:scala
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    command: start-master.sh --host spark-master
+
+  spark-worker:
+    image: twang2218/spark:scala
+    ports:
+      - "8081:8081"
+    command: start-slave.sh --host spark-worker spark://spark-master:7077
