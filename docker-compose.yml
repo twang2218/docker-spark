@@ -5,13 +5,20 @@ services:
     ports:
       - "7077:7077"
       - "8080:8080"
-    command: start-master.sh --host spark-master
+    environment:
+      - "SPARK_MASTER_HOST=spark-master"
+      # - "SPARK_MASTER_PORT=7077"
+      # - "SPARK_MASTER_WEBUI_PORT=8080"
+      # - "SPARK_PUBLIC_DNS=spark-master.example.com"
+    command: start-master.sh
 
   spark-worker:
     image: twang2218/spark:scala
     ports:
       - "8081:8081"
     environment:
+      # - "SPARK_WORKER_WEBUI_PORT=8081"
       - "SPARK_EXECUTOR_MEMORY=4G"
       - "SPARK_DRIVER_MEMORY=2G"
+      # - "SPARK_PUBLIC_DNS=spark-worker.example.com"
     command: start-slave.sh --host spark-worker spark://spark-master:7077
