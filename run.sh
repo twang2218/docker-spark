@@ -172,7 +172,7 @@ function trigger_build() {
       --header "Content-Type: application/json" \
       --request POST \
       --data "{\"docker_tag\": \"$tag\"}" \
-      https://registry.hub.docker.com/u/${IMAGE_NAME}/trigger/${DOCKER_TRIGGER_TOKEN}
+      https://registry.hub.docker.com/u/${IMAGE_NAME}/trigger/${DOCKER_TRIGGER_TOKEN}/
     echo -e "\nTriggerred Docker Hub build."
   else
     echo -e "\nDOCKER_TRIGGER_TOKEN is empty"
