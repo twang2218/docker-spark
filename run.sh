@@ -34,7 +34,7 @@ function generate_dockerfile() {
   local path=`get_dockerfile_path $spark_version $hadoop_version`
 
   mkdir -p $path
-  cat ./template/Dockerfile | sed \
+  cat ./template/Dockerfile.template | sed \
     -e "s/#SPARK_VERSION#/$spark_version/g" \
     -e "s/#HADOOP_VERSION#/$hadoop_version/g" \
     > $path/Dockerfile
@@ -51,8 +51,8 @@ function generate() {
   generate_dockerfile 2.0.2 2.4
   generate_dockerfile 2.0.2 2.6
   generate_dockerfile 2.0.2 2.7
+  generate_readme
 }
-
 
 function build_image() {
   local spark_version=$1
@@ -75,26 +75,15 @@ function release_image() {
   local spark_version=$1
   local hadoop_version=$2
   local tag=`get_image_tag $spark_version $hadoop_version`
-
+  local tag_list=`get_tag_list $spark_version $hadoop_version`
   docker push ${IMAGE_NAME}:${tag}
 
-  # update branch tag
-  local branch_tag=`get_image_tag $(remove_patch_version $spark_version) $hadoop_version`
-  docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:${branch_tag}
-  docker push ${IMAGE_NAME}:${tag}
-
-  # update branch tag with latest hadoop version
-  if [ "$hadoop_version" = "$LATEST_HADOOP_VERSION" ]; then
-    local branch_latest_tag=`remove_patch_version $spark_version`
-    docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:${branch_latest_tag}
-    docker push ${IMAGE_NAME}:${branch_latest_tag}
-  fi
-
-  # update the latest tag if it is latest version
-  if [ "$spark_version" = "$LATEST_SPARK_VERSION" ] && [ "$hadoop_version" = "$LATEST_HADOOP_VERSION" ]; then
-    docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:latest
-    docker push ${IMAGE_NAME}:latest
-  fi
+  for t in $tag_list; do
+    if [ "$t" != "$tag" ]; then
+      docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:${t}
+      docker push ${IMAGE_NAME}:${t}
+    fi
+  done
 }
 
 function build_and_test() {
@@ -124,6 +113,56 @@ function check_image() {
   else
     echo "Nothing changed in $tag."
   fi
+}
+
+function get_tag_list() {
+  local spark_version=$1
+  local hadoop_version=$2
+
+  local list=''
+  # tag with patch version
+  list+="`get_image_tag $spark_version $hadoop_version`"
+  # tag without patch version
+  list+=" `get_image_tag $(remove_patch_version $spark_version) $hadoop_version`"
+
+  # branch tag without hadoop version
+  if [ "$hadoop_version" = "$LATEST_HADOOP_VERSION" ]; then
+    list+=" `remove_patch_version $spark_version`"
+  fi
+
+  # latest tag
+  if [ "$spark_version" = "$LATEST_SPARK_VERSION" ] && [ "$hadoop_version" = "$LATEST_HADOOP_VERSION" ]; then
+    list+=" latest"
+  fi
+  echo "$list"
+}
+
+function generate_tags_link() {
+  local spark_version=$1
+  local hadoop_version=$2
+  local tags=`get_tag_list $spark_version $hadoop_version`
+
+  local tags_label=''
+  for i in $tags; do
+    if [ -n "$tags_label" ]; then
+      tags_label+=", "
+    fi
+    tags_label+="\`$i\`"
+  done
+  echo "- [${tags_label} (*${path}/Dockerfile*)](https://github.com/${IMAGE_NAME}/blob/master/${path}/Dockerfile)"
+}
+
+function generate_readme() {
+  local links=`foreach generate_tags_link`
+  local tempfile=links.temp
+  echo "$links" > $tempfile
+  cat ./template/README.md.template | sed \
+    -e "s#{IMAGE_NAME}#${IMAGE_NAME}#g" \
+    -e "s/{LATEST_TAG}/$(remove_patch_version $LATEST_SPARK_VERSION)/g" \
+    -e "/{VERSIONS}/ {r $tempfile" -e "d" -e "}" \
+    -e "/{COMPOSE_EXAMPLE}/ {r docker-compose.yml" -e "d" -e "}" \
+    > README.md
+  rm $tempfile
 }
 
 function trigger_build() {

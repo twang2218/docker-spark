@@ -1,0 +1,41 @@
+# Supported tags and respective `Dockerfile` links
+
+{VERSIONS}
+
+[![Build Status](https://travis-ci.org/twang2218/docker-spark.svg?branch=master)](https://travis-ci.org/twang2218/docker-spark)
+[![Image Layers and Size](https://images.microbadger.com/badges/image/twang2218/docker-spark.svg)](http://microbadger.com/images/twang2218/docker-spark)
+[![Deploy to Docker Cloud](https://files.cloud.docker.com/images/deploy-to-dockercloud.svg)](https://cloud.docker.com/stack/deploy/?repo=https://github.com/twang2218/docker-spark)
+
+# Apache Spark Docker image
+
+To minimize the size, this set of Spark docker images are based on [openjdk:8-alpine](https://hub.docker.com/r/library/openjdk/tags/8-alpine/).
+
+## Usage
+
+The image contains scala, R, and python dependencies, so it's easy to use for development environment.
+
+To run a spark shell for scala:
+
+```bash
+docker run -it --rm {IMAGE_NAME}:{LATEST_TAG} spark-shell
+```
+
+To run a R shell with spark support:
+
+```bash
+docker run -it --rm {IMAGE_NAME}:{LATEST_TAG} sparkR
+```
+
+To run a Python shell:
+
+```bash
+docker run -it --rm {IMAGE_NAME}:{LATEST_TAG} pyspark
+```
+
+## Spark Standalone Cluster
+
+It's easy to run a Spark standalone cluster with this docker image by using `docker-compose`. Here is a `docker-compose.yml` example:
+
+```yml
+{COMPOSE_EXAMPLE}
+```
