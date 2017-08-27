@@ -2,17 +2,21 @@ FROM openjdk:8-alpine
 
 # bash: for spark shell
 # procps: for `ps -p`
-RUN apk --no-cache add bash procps 
+# might need 'R-dev' for install CRAN package
+RUN apk --no-cache add bash procps python R
 
-ENV SPARK_VERSION 2.2.0
-ENV HADOOP_VERSION 2.7
+ENV SPARK_VERSION 2.0.2
+ENV HADOOP_VERSION 2.6
 ENV SPARK_HOME /usr/local/share/spark
 
 ENV SPARK_NO_DAEMONIZE=true
 
+# Find the fast mirror by:
+# curl -s  http://www.apache.org/dyn/closer.cgi | grep -A3 suggest | grep strong
+
 RUN set -xe \
   && cd tmp \
-  && wget http://www.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+  && wget http://mirrors.gigenet.com/apache/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
   && tar -zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
   && rm *.tgz \
   && mkdir -p `dirname ${SPARK_HOME}` \

@@ -5,8 +5,8 @@ FROM openjdk:8-alpine
 # might need 'R-dev' for install CRAN package
 RUN apk --no-cache add bash procps python R
 
-ENV SPARK_VERSION #SPARK_VERSION#
-ENV HADOOP_VERSION #HADOOP_VERSION#
+ENV SPARK_VERSION 2.2.0
+ENV HADOOP_VERSION 2.7
 ENV SPARK_HOME /usr/local/share/spark
 
 ENV SPARK_NO_DAEMONIZE=true
