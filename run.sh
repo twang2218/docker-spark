@@ -149,7 +149,7 @@ function generate_tags_link() {
     fi
     tags_label+="\`$i\`"
   done
-  echo "- [${tags_label} (*${path}/Dockerfile*)](https://github.com/${IMAGE_NAME}/blob/master/${path}/Dockerfile)"
+  echo "- [${tags_label} (*${path}/Dockerfile*)](https://github.com/twang2218/docker-spark/blob/master/${path}/Dockerfile)"
 }
 
 function generate_readme() {
